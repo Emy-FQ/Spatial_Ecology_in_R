@@ -53,3 +53,18 @@ dev.off()
 cl <- colorRampPalette(c("green", "red","blue")) #the function extends a color palette in a color ramp (remember that R is case sensitive)
 plot(dmap, col=cl) #this palette and the rinbowcol palette should be avoided bc they cannot be seen by color blind people
 
+cl <- colorRampPalette(c("green", "red","blue"))(100) #selecting the number of intermediate colors from a color to another
+plot(dmap, col=cl)
+
+#in the site R charts we can search r colors, where we can see all the colors in R:
+#https://r-charts.com/colors/
+cl2<- colorRampPalette(c("darkseagreen","hotpink","mediumpurple"))
+plot(dmap, col=cl2)
+
+#plot the dmap with two different colors ramps, one on top of the other
+par(mfrow=c(2,1))
+plot(dmap, col=cl)
+plot(dmap, col=cl2)
+
+
+
