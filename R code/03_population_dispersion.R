@@ -35,3 +35,57 @@ points(abse, col="deeppink") #we cannot use plot beacuse the second graph would 
 par(mfrow=c(2,1))
 plot(pres, col="chartreuse1")
 plot(abse, col="deeppink")
+
+#06/11
+#ancillary data: data connected to teh life of the organism, like elevation
+#covariates: 
+elev <- system.file("external/elevation.asc", package="sdm")
+elevmap <- rast(elev) #we use rast because it is a raster file
+plot(elevmap)
+
+#exercise: change the colors of the elevation map by the colorRampPalette function
+cl <- colorRampPalette(c("green","hotpink","mediumpurple"))(100)
+plot(elevmap, col=cl)
+
+# Exercise: plot the presnces together with elevation map
+points(pres, pch=19)
+
+# Exercise: import temperature and plot presences vs. temperature
+temp <- system.file("external/temperature.asc", package="sdm")
+tempmap <- rast(temp)
+plot(tempmap)
+points(pres)
+install.packages("viridis") #this package is needed to have some colors 
+library(viridis)
+plot(tempmap, col=mako(100))
+
+# Exercise: plot elevation and temperature with presences one beside the other
+par(mfrow=c(1,2))
+plot(elevmap, col=mako(100))
+points(pres)
+plot(tempmap, col=mako(100))
+points(pres)
+
+# input precipitation data
+prec <- system.file("external/precipitation.asc", package="sdm")
+precmap <- rast(prec)
+points(pres)
+plot(precmap)
+points(pres)
+
+# vegetation
+vege <- system.file("external/vegetation.asc", package="sdm")
+vegemap <- rast(vege)
+plot(vegemap)
+points(pres)
+
+# Exercise: plot all the ancillary variable in a multiframe
+par(mfrow=c(2,2))
+plot(elevmap)
+plot(tempmap)
+plot(precmap)
+plot(vegemap)
+# we can create an array of maps creating a stack, every single map represent elements of an array so concatenate them to create a stack. This requires terra package
+anci <- c(elevmap, tempmap, precmap, vegemap)
+plot(anci)
+plot(anci, col=magma(100))
