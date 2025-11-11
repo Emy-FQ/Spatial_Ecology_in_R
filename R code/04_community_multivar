@@ -6,3 +6,33 @@ library(vegan)
 
 data(dune) #dataset containing data about the dune system
 head(dune) #when we have a big dataset we can use the "head" function to see the first six rows
+#the table in the this data set  is a species abundant matrix, with 20 dimensions (bc 20 plots)
+
+#11/11
+#we use the function decorana to do a detrended correspondence analysis (DCA), we do this analysis bc in a data set in which the data are far from one another, they do not cluster together, they would impact the PCA, so we use the DCA to compact the range.
+#compacting data: can be done by using logarithms, or with the square roots. Teh detrending is compacting the data.
+
+multivar <- decorana (dune) #we applied a DCA to the dune set
+#useful book: "numerical ecology"
+multivar #we see the variability explained by every axis, we are interested in the first one, the DCA1
+
+#the axis length is the range explained by each axis 
+dca1l<-3.7004 #we could also use "=" in this case, instead of "<-", it would be thoeretically correct
+dca2l<-3.1166
+dca3l<-1.30055
+dca4l<-1.47888
+total= sum(c(dca1l,dca2l,dca3l,dca4l)) 
+#we calculated the total to get the percentage of each axis, the range detected (=explained variability) by each axis
+perc1= dca1l*100/total
+perc2=dca2l*100/total
+perc3=dca3l*100/total
+perc4=dca4l*100/total
+perc1+perc2 #the first two axis explain 71% of the range.
+
+#lets try a PCA
+multipca<- pca(dune) #we are going to look at it in the next lesson
+
+plot(multivar)
+#instead of using the original axis, we passed to different axis system in which, for example, we may see the grassland species in on a part of the graph, the shrub species in another etc.
+#the graph allows us to see if the species we have in the plots are related.
+#graphically in a DCA seeing the species is easier than in a PCA.
