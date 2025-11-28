@@ -76,3 +76,28 @@ plot(b2,b3)
 plot(b2,b8) 
 #since the NIR is not correlated to the visible spectrum, it is adding information
 
+#28/11
+#creating colored images
+sent<-c(b2,b3,b4,b8)
+plot(sent)
+dev.off()
+#natural color image:
+im.plotRGB(sent,r=3,g=2,b=1, title="natural color") #we are putting the corresponding bands in the function
+
+#let's use the near infrared to see more details since it discriminates the objects better 
+im.plotRGB(sent,r=4,g=3,b=2, title="false color") #we removed one number and scaled everything to use the NIR layer, we put the NIR on top of the red component, so everything that reflects the NIR a lot will become red
+#the rocks are reflecting all the light so they are white in the image
+
+#let's switch the NIR layer on top of the green component
+im.plotRGB(sent,r=3,g=4,b=2, title="false color")
+
+#let's switch the NIR layer on top of the blue component
+im.plotRGB(sent,r=3,g=2,b=4, title="false color")
+
+duccio(2,2) #at the moment there is a problem with the function so the graphs overlap
+im.plotRGB(sent,r=3,g=2,b=1, title="natural color")
+im.plotRGB(sent,r=4,g=3,b=2, title="false color")
+im.plotRGB(sent,r=3,g=4,b=2, title="false color")
+im.plotRGB(sent,r=3,g=2,b=4, title="false color")
+
+
