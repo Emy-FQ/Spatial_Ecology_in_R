@@ -34,10 +34,11 @@ plot(sd3)
 
 library(ggplot2)
 library(viridis)
+library(patchwork)
 p1<-im.ggplot(nir)
 p2<-im.ggplot(sentmean)
 p3<-im.ggplot(sd3)
-p1 + p2 + p3 #doesn't work, check why
+p1 + p2 + p3 
 
 plot(sd3, col=magma(1000))
 
@@ -46,4 +47,3 @@ plot(sd3, col=magma(1000))
 
 sd5<-focal(nir, w=5, fun="sd")
 
-#check the prof's code bc the last things are missing here, and many didn't work
