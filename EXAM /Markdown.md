@@ -87,8 +87,8 @@ library("viridis")
 library("ggplot2")
 library("tidyverse")
 ````
-After that the satellite images were imported as rast files. 
-Since the images had different coordinates systems they did not match, so the spring image was chosen as reference and the others were projected over it, in order to re-align the pixels.
+After that the satellite images were imported as rast files and plotted. 
+It was found that the images had different coordinates systems, so they did not match, to resolve this issue the spring image was chosen as reference and the others were projected over it in order to re-align the pixels.
 ````r
 #import the spring rast image
 spring<-rast("Spring.tif")
@@ -106,8 +106,15 @@ summer_aligned<-project(summer, spring)
 compareGeom(spring, summer_aligned) #it returns "TRUE"
 summer<-summer_aligned
 
-#plot spring and summer
+#plot spring
 plot(spring, col=viridis::turbo(100))
+````
+<p align="center">
+  <img src="Images/" width="800">
+</p>
+
+````r
+#plot summer
 plot(summer, col=viridis::turbo(100))
 
 #import the autumn rast image and align it
@@ -115,4 +122,12 @@ autumn<- rast("Autumn.tif")
 autumn_aligned <- project(autumn, spring)
 autumn <- autumn_aligned
 compareGeom(spring, autumn) #it returns "TRUE"
+
+#import the winter rast image and align it
+winter<-rast("Winter.tif")
+#the "project" function alone failed, alternative: align the image in two steps
+winter_lonlat <- project(winter, "EPSG:4326") #step 1: change coordinates systems
+winter_aligned <- resample(winter_lonlat, spring) #align the pixels grids
+winter<-winter_aligned
+compareGeom(spring, winter) #it returns "TRUE"
 ````
