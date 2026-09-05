@@ -88,8 +88,8 @@ library("viridis")
 library("ggplot2")
 library("tidyverse")
 ````
-After that the satellite images were imported as rast files and plotted. 
-It was found that the images had different coordinates systems, so they did not match, to resolve this issue the spring image was chosen as reference and the others were projected over it in order to re-align the pixels.
+After that, the satellite images were imported as rast files and plotted. 
+It was found that the images did not match because they had different coordinates systems, to resolve this issue the spring image was chosen as reference and the others were projected over it in order to re-align the pixels.
 ````r
 #import the spring rast image
 spring<-rast("Spring.tif")
@@ -171,3 +171,30 @@ dev.off()
 > In summer and autumn on the lake's surface are clearly visible some green swirls that probably indicate intense algal blooms
 
 ### 3.2 Lake's area isolation
+In order to isolate the area of the lake's surface from the surrounding land, the NDWI was used. It was selected a threshold value of -0.1: 
+-	NDWI > -0.1: water
+-	NDWI < -0.1: non-water
+Then a mask was created to maintain only the water pixels, converting non-water pixels to NA data. It was chosen to utilize a static mask, calculated over the spring image and then applied to the other seasons.
+
+````r
+#Isolate the lake from the land using the NDWI (Normalized Difference Water Index)
+#calculate the NDWI 
+ndwi_spring <- (spring[["B3"]] - spring[["B8"]]) / (spring[["B3"]]  + spring[["B8"]])
+#create a water mask: TRUE (1) for water, FALSE (0) for non-water
+water_mask <- ndwi_spring > -0.1 #ndwi values above -0.1 identify water
+water_mask[water_mask == 0] <- NA #convert non-water pixel to NA
+#apply the water mask and check results
+spring_lake <- mask(spring, water_mask)
+plot(spring_lake)
+````
+<p align="center">
+  <img src="Images/spring_lake_plot.png">
+</p>
+
+> Now only the area within the lake is shown
+````r
+#apply the mask to all the seasons
+summer_lake <- mask(summer, water_mask)
+autumn_lake <- mask(autumn, water_mask)
+winter_lake <- mask(winter, water_mask)
+````
