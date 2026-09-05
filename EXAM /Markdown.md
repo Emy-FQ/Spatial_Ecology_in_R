@@ -27,6 +27,7 @@ In this analysis the four metereological seasons of the year 2023, starting from
 The satellite images, one for each season, were downloaded from the Sentinel-2 dataset, using [Google Earth Engine](https://earthengine.google.com/). 
 The area of interest was selected manually on the map. 
 A cloud filter was applied to extract only images with less than 30% cloud coverage; if a season had more than one image meeting this criterion, the median of the images was computed. 
+Despite the filter some of the images were still disturbed by clouds, so a cloud mask was applied, exploiting the pixel classification built in Sentinel-2 data.
 > [!NOTE]
 > the JavaScript code used on Google Earth Engine for each season can be found in the folder "JavaScript" 
 
@@ -36,12 +37,6 @@ The indexes used in this analysis are:
  - **NDWI** (Normalized Difference Water Index)
  - **NDVI** (Normalized Difference Vegetation Index)
  - **NDCI** (Normalized Difference Chlorophyll Index)
-
-> In Sentinel-2 the bands used in this analysis are:
-> - RED: B4
-> - RED Edge: B5
-> - GREEN: B3
-> - NIR: B8
 
 #### NDWI
 The NDWI is used to monitor changes related to water content in water bodies was used to detect the water’s surface. In this analysis it was used to separate the lake from the sorrounding land, in order to perform the next analyses only on the area within the lake. 
@@ -70,8 +65,54 @@ $$
 NDCI = \frac{RED Edge - RED}{RED Edge + RED}
 $$
 
+> In Sentinel-2 the bands used in this analysis are:
+> - RED: B4
+> - RED Edge: B5
+> - GREEN: B3
+> - NIR: B8
+
 ## R analysis
 > [!NOTE]
 > the R code used for this analysis can be found in the file "R_script.R"
 
+The first step is setting the working directory:
+````r
+setwd("C:/Users/utente/Desktop/R_exam")
+````
+Then the libraries of the necessary packages were loaded:
+````r
+library("terra")
+library("imageRy")
+library("viridis")
+library("ggplot2")
+library("tidyverse")
+````
+After that the satellite images were imported as rast files. 
+Since the images had different coordinates systems they did not match, so the spring image was chosen as reference and the others were projected over it, in order to re-align the pixels.
+````r
+#import the spring rast image
+spring<-rast("Spring.tif")
 
+#import the summer rast image
+summer<-rast("Summer.tif")
+
+spring
+summer
+compareGeom(spring, summer) #error: the two images do not align, they have different coordinates systems
+
+#project summer over spring to make them match
+summer_aligned<-project(summer, spring)
+#check that they now match
+compareGeom(spring, summer_aligned) #it returns "TRUE"
+summer<-summer_aligned
+
+#plot spring and summer
+plot(spring, col=viridis::turbo(100))
+plot(summer, col=viridis::turbo(100))
+
+#import the autumn rast image and align it
+autumn<- rast("Autumn.tif")
+autumn_aligned <- project(autumn, spring)
+autumn <- autumn_aligned
+compareGeom(spring, autumn) #it returns "TRUE"
+````
