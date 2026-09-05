@@ -15,7 +15,7 @@ Remote sensing can be a useful tool for monitoring algal blooms, allowing spatia
 The aim of this analysis is to utilise remote sensing techniques to monitor the algal blooms of Lough Neagh during the year 2023, comparing their intensity across seasons.
 
 ## 2. Methodology overview 
-### Time period
+### 2.1 Time period
 In this analysis the four metereological seasons of the year 2023, starting from spring, were monitored:
 
  - spring: 01/03 - 31/05/2023
@@ -23,7 +23,7 @@ In this analysis the four metereological seasons of the year 2023, starting from
  - autumn: 01/09 - 30/11/2023
  - winter: 01/12/2023 - 28/02/2024
 
-### Satellite imagery
+### 2.2 Satellite imagery
 The satellite images, one for each season, were downloaded from the Sentinel-2 dataset, using [Google Earth Engine](https://earthengine.google.com/). 
 The area of interest was selected manually on the map. 
 A cloud filter was applied to extract only images with less than 30% cloud coverage; if a season had more than one image meeting this criterion, the median of the images was computed. 
@@ -31,7 +31,7 @@ Despite the filter some of the images were still disturbed by clouds, so a cloud
 > [!NOTE]
 > the JavaScript code used on Google Earth Engine for each season can be found in the folder "JavaScript" 
 
-### Indexes
+### 2.3 Indexes
 The indexes used in this analysis are:
 
  - **NDWI** (Normalized Difference Water Index)
@@ -69,9 +69,10 @@ $$
 > - RED: B4
 > - RED Edge: B5
 > - GREEN: B3
+> - BLUE: B2
 > - NIR: B8
 
-## R analysis
+## 3. R analysis
 > [!NOTE]
 > the R code used for this analysis can be found in the file "R_script.R"
 
@@ -93,6 +94,15 @@ It was found that the images had different coordinates systems, so they did not 
 #import the spring rast image
 spring<-rast("Spring.tif")
 
+#plot spring
+plot(spring, col=viridis::turbo(100))
+````
+<p align="center">
+  <img src="Images/Spring_plot.png">
+</p>
+
+````r
+
 #import the summer rast image
 summer<-rast("Summer.tif")
 
@@ -106,23 +116,28 @@ summer_aligned<-project(summer, spring)
 compareGeom(spring, summer_aligned) #it returns "TRUE"
 summer<-summer_aligned
 
-#plot spring
-plot(spring, col=viridis::turbo(100))
+#plot summer
+plot(summer, col=viridis::turbo(100))
 ````
 <p align="center">
-  <img src="Images/" width="800">
+  <img src="Images/Summer_plot.png">
 </p>
 
 ````r
-#plot summer
-plot(summer, col=viridis::turbo(100))
-
 #import the autumn rast image and align it
 autumn<- rast("Autumn.tif")
 autumn_aligned <- project(autumn, spring)
 autumn <- autumn_aligned
 compareGeom(spring, autumn) #it returns "TRUE"
 
+#plot autumn
+plot(autumn,col=viridis::turbo(100))
+````
+<p align="center">
+  <img src="Images/Autumn_plot.png">
+</p>
+
+````r
 #import the winter rast image and align it
 winter<-rast("Winter.tif")
 #the "project" function alone failed, alternative: align the image in two steps
@@ -130,4 +145,29 @@ winter_lonlat <- project(winter, "EPSG:4326") #step 1: change coordinates system
 winter_aligned <- resample(winter_lonlat, spring) #align the pixels grids
 winter<-winter_aligned
 compareGeom(spring, winter) #it returns "TRUE"
+
+#plot winter
+plot(winter,col=viridis::turbo(100))
 ````
+<p align="center">
+  <img src="Images/Winter_plot.png">
+</p>
+
+### 3.1 RGB colours visualization
+````r
+#visualize the images in RGB colours
+par(mfrow = c(2, 2))
+par(col.main = "white")
+im.plotRGB(spring, r = 1, g = 2, b = 3, title = "Spring")
+im.plotRGB(summer, r = 1, g = 2, b = 3, title = "Summer")
+im.plotRGB(autumn, r = 1, g = 2, b = 3, title = "Autumn")
+im.plotRGB(winter, r = 1, g = 2, b = 3, title = "Winter")
+dev.off()
+````
+<p align="center">
+  <img src="Images/RGB_plot.png">
+</p>
+
+> In summer and autumn on the lake's surface are clearly visible some green swirls that probably indicate intense algal blooms
+
+### 3.2 Lake's area isolation
