@@ -9,7 +9,11 @@ In recent years it has been affected by severe algal blooms, raising concerns ab
 
 During the year 2023, the lake experienced a particularly intense proliferation of cyanobacteria (i.e. the microorganisms causing algal blooms), due multiple causes, such as: eutrophication caused by agriculture run-off, global warming, invasive species, and the calm weather conditions of that year.
 
-Remote sensing can be a useful tool for monitoring algal blooms, allowing spatial observations that couldn’t be possible with traditional in-situ sampling. 
+Remote sensing can be a useful tool for monitoring algal blooms, allowing spatial observations that couldn’t be possible with traditional in-situ sampling.
+
+<p align="center">
+  <img src="Images/Lough_neagh.png">
+</p>
 
 ###  Aim of the analysis
 The aim of this analysis is to utilise remote sensing techniques to monitor the algal blooms of Lough Neagh during the year 2023, comparing their intensity across seasons.
@@ -153,6 +157,9 @@ plot(winter,col=viridis::turbo(100))
   <img src="Images/Winter_plot.png">
 </p>
 
+> [!NOTE]
+> There are some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are not many, they should't affect the results of the analysis.  
+
 ### 3.1 RGB colours visualization
 ````r
 #visualize the images in RGB colours
@@ -168,7 +175,7 @@ dev.off()
   <img src="Images/RGB_plot.png">
 </p>
 
-> In summer and autumn on the lake's surface are clearly visible some green swirls that probably indicate intense algal blooms
+> In summer and autumn, some green swirls are clearly visible on the lake's surface, they probably indicate intense algal blooms.
 
 ### 3.2 Lake's area isolation
 In order to isolate the area of the lake's surface from the surrounding land, the NDWI was used. It was selected a threshold value of -0.1: 
@@ -192,9 +199,106 @@ plot(spring_lake)
 </p>
 
 > Now only the area within the lake is shown
+
 ````r
 #apply the mask to all the seasons
 summer_lake <- mask(summer, water_mask)
 autumn_lake <- mask(autumn, water_mask)
 winter_lake <- mask(winter, water_mask)
 ````
+
+### 3.3 Water surface classification
+#### NDVI 
+The NDVI can assume values between -1 and +1, generally positive values indicate the presence of vegetation, while negative values are usually associated to bare soil, water and snow. 
+````r
+#calculate the NDVI (Normalized Difference Vegetation Index)
+ndvi_spring <- (spring_lake[["B8"]] - spring_lake[["B4"]]) / (spring_lake[["B8"]] + spring_lake[["B4"]])
+ndvi_summer <- (summer_lake[["B8"]] - summer_lake[["B4"]]) / (summer_lake[["B8"]] + summer_lake[["B4"]])
+ndvi_autumn <- (autumn_lake[["B8"]] - autumn_lake[["B4"]]) / (autumn_lake[["B8"]] + autumn_lake[["B4"]])
+ndvi_winter <- (winter_lake[["B8"]] - winter_lake[["B4"]]) / (winter_lake[["B8"]] + winter_lake[["B4"]])
+
+par(mfrow = c(2, 2))
+plot(ndvi_spring, main="NDVI Spring", col=viridis::mako(100))
+plot(ndvi_summer, main="NDVI Summer", col=viridis::mako(100))
+plot(ndvi_autumn, main="NDVI Autumn", col=viridis::mako(100))
+plot(ndvi_winter, main="NDVI Winter", col=viridis::mako(100))
+dev.off()
+````
+<p align="center">
+  <img src="Images/NDVI.png">
+</p>
+
+> It can already be observed that most seasons, but especially autumn, have areas of the lake with NDVI values that are usually associated to vegetation.
+
+To classify the water surface using NDVI values, the following classes were created: 
+- **Water**: -Inf < NDVI < -0.2
+- **Shallow Turbid Water**: -0.2 < NDVI < 0.0
+- **Sparse Vegetation**: 0.0 < NDVI < 0.2
+- **Dense Vegetation**: 0.2 < NDVI < Inf
+
+> [!NOTE]
+> The classes were decided referencing the work of Selvarajan (2026)
+
+````r
+#classify the area using the NDVI
+class_matrix_ndvi <- matrix(c(
+  -Inf,  -0.2,  1,   # Class 1: Water 
+  -0.2,  0.0,  2,   # Class 2: Shallow Turbid Water
+  0.0,  0.2,  3,   # Class 3: Sparse Vegetation
+  0.2,  Inf,  4    # Class 4: Dense Vegetation
+), ncol = 3, byrow = TRUE)
+
+
+ndvi_colours <-c("cadetblue1","#CDB79E","#9AFF9A","#698B69")
+
+par(mfcol = c(2,3),oma = c(1, 1, 3, 0))
+#spring classification
+spring_ndvi_classified <- classify(ndvi_spring, class_matrix_ndvi)
+plot(spring_ndvi_classified, 
+     col = ndvi_colours, 
+     main = "Spring",
+     type = "classes")
+
+#summer classification
+summer_ndvi_classified <- classify(ndvi_summer, class_matrix_ndvi)
+plot(summer_ndvi_classified, 
+     col = ndvi_colours, 
+     main = "Summer",
+     type = "classes")
+
+#autumn classification
+autumn_ndvi_classified <- classify(ndvi_autumn, class_matrix_ndvi)
+plot(autumn_ndvi_classified, 
+     col = ndvi_colours, 
+     main = "Autumn",
+     type = "classes")
+
+#winter classification
+winter_ndvi_classified <- classify(ndvi_winter, class_matrix_ndvi)
+plot(winter_ndvi_classified, 
+     col = ndvi_colours, 
+     main = "Winter",
+     type = "classes")
+
+mtext("NDVI classification", 
+      side = 3,        # 3 = top margin
+      outer = TRUE,    # Place it in the outer margin space
+      line = 1,        # Distance from the top plot boundary
+      font = 2,        # Bold text
+      cex = 1.3)       # Title text size
+par(mfrow = c(1, 1))
+legend("right", 
+       legend = c("Water", 
+                  "Shallow Turbid Water", 
+                  "Sparse Vegetation", 
+                  "Dense Vegetation"), 
+       fill = ndvi_colours,
+       xpd = NA,
+       inset = -0.3,
+       cex = 0.8)
+dev.off()
+````
+<p align="center">
+  <img src="Images/NDVI_classification.png">
+</p>
+
