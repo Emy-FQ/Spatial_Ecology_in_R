@@ -117,7 +117,8 @@ spring
 summer
 compareGeom(spring, summer) #error: the two images do not align, they have different coordinates systems
 ````
-It was found that the images did not match, because they had different coordinates systems: Projected-WGS84 for spring and UTM-WGS84 for summer. To solve this issue, the spring image was chosen as model and the others were projected on it, in order to standardize the coordinates systems and align the pixels.
+> [!NOTE]
+> It was found that the images did not match, because they had different coordinates systems: Projected-WGS84 for spring and UTM-WGS84 for summer. To solve this issue, the spring image was chosen as model and the others were projected on it, in order to standardize the coordinates systems and align the pixels.
 
 ````r
 #project summer over spring to make them match
