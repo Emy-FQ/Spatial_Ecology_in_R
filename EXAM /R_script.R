@@ -17,7 +17,8 @@ summer<-rast("Summer.tif")
 
 spring
 summer
-compareGeom(spring, summer) #error: the two images do not align, they have different coordinates systems
+#compareGeom(spring, summer) 
+#error: the two images do not align, they have different coordinates systems
 
 #project summer over spring to make them match
 summer_aligned<-project(summer, spring)
