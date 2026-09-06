@@ -42,7 +42,7 @@ The indexes used in this analysis are:
  - **NDVI** (Normalized Difference Vegetation Index)
  - **NDCI** (Normalized Difference Chlorophyll Index)
 
-#### NDWI
+#### 2.3.1 NDWI
 The NDWI is used to monitor changes related to water content in water bodies was used to detect the water’s surface. In this analysis it was used to separate the lake from the sorrounding land, in order to perform the next analyses only on the area within the lake. 
 The NDWI formula is the following:
 
@@ -51,7 +51,7 @@ NDWI = \frac{GREEN - NIR}{GREEN + NIR}
 $$
 
 
-#### NDVI
+#### 2.3.2 NDVI
 The NDVI is one of the most used vegetation indexes for assessing vegetation health, density, and photosynthetic activity. It considers the difference between the NIR and the red reflectance; since healthy plants, due to their chlorophyll content, tend to absorb red light and reflect NIR light, it can be used to assess the presence of plants, their characteristics (grass, shrubs, forests etc.), and their health. 
 The formula is the following:
 
@@ -60,7 +60,8 @@ NDVI = \frac{NIR - RED}{NIR + RED}
 $$
 
 It is conventionally applied to land vegetation, but in this analysis it was employed to assess the presence of vegetation within the lake, considering it a proxy of eutrophication, although it has the limitation of not being able to discriminate the photosynthetic activity of aquatic plants from the one of cyanobacteria.
-#### NDCI
+
+#### 2.3.3 NDCI
 The NDCI is a novel index developed with the objective of improving the chl-_a_ retrieval in turbid productive waters. This index has been applied in several studies to assess algal blooms because chl-_a_ is the main photosynthetic pigment of cyanobacteria.
 
 The formula is the following:
@@ -92,8 +93,8 @@ library("viridis")
 library("ggplot2")
 library("tidyverse")
 ````
-After that, the satellite images were imported as rast files and plotted. 
-It was found that the images did not match because they had different coordinates systems, to resolve this issue the spring image was chosen as reference and the others were projected over it in order to re-align the pixels.
+After that, the satellite images were imported as raster files and plotted. 
+
 ````r
 #import the spring rast image
 spring<-rast("Spring.tif")
@@ -105,6 +106,8 @@ plot(spring, col=viridis::turbo(100))
   <img src="Images/Spring_plot.png">
 </p>
 
+> Spring plot
+
 ````r
 
 #import the summer rast image
@@ -113,7 +116,10 @@ summer<-rast("Summer.tif")
 spring
 summer
 compareGeom(spring, summer) #error: the two images do not align, they have different coordinates systems
+````
+It was found that the images did not match, because they had different coordinates systems. To solve this issue, the spring image was chosen as model and the others were projected on it, in order to standardize the coordinates systems and align the pixels.
 
+````r
 #project summer over spring to make them match
 summer_aligned<-project(summer, spring)
 #check that they now match
@@ -126,6 +132,8 @@ plot(summer, col=viridis::turbo(100))
 <p align="center">
   <img src="Images/Summer_plot.png">
 </p>
+
+> Summer plot
 
 ````r
 #import the autumn rast image and align it
@@ -140,6 +148,8 @@ plot(autumn,col=viridis::turbo(100))
 <p align="center">
   <img src="Images/Autumn_plot.png">
 </p>
+
+> Autumn plot
 
 ````r
 #import the winter rast image and align it
@@ -157,8 +167,10 @@ plot(winter,col=viridis::turbo(100))
   <img src="Images/Winter_plot.png">
 </p>
 
+> Winter plot
+
 > [!NOTE]
-> There are some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are not many, they should't affect the results of the analysis.  
+> The plots show some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are only a few, over a large area of hundreds of square kilometers, they should't affect the results of the analysis.  
 
 ### 3.1 RGB colours visualization
 ````r
@@ -175,12 +187,17 @@ dev.off()
   <img src="Images/RGB_plot.png">
 </p>
 
-> In summer and autumn, some green swirls are clearly visible on the lake's surface, they probably indicate intense algal blooms.
+> RGB plot of the four seasons
+
+#### 3.1.1 Results
+In summer and autumn, green swirls that probably indicate intense algal blooms, are clearly visible on the lake's surface. In summer they are concentrated in the North-West portion of the lake; in autumn they occupy a larger area, they can be observed along the entire East shore, as well as in the previous area (albeit less conspicuous than in summer).
+In spring and winter no distinct evidences of algal blooms can be observed.
 
 ### 3.2 Lake's area isolation
-In order to isolate the area of the lake's surface from the surrounding land, the NDWI was used. It was selected a threshold value of -0.1: 
+In order to isolate the area of the lake's surface from the surrounding land it was used the NDWI. It was selected a threshold value of -0.1 to distinguish water from the other types of land cover: 
 -	NDWI > -0.1: water
 -	NDWI < -0.1: non-water
+
 Then a mask was created to maintain only the water pixels, converting non-water pixels to NA data. It was chosen to utilize a static mask, calculated over the spring image and then applied to the other seasons.
 
 ````r
@@ -198,7 +215,7 @@ plot(spring_lake)
   <img src="Images/spring_lake_plot.png">
 </p>
 
-> Now only the area within the lake is shown
+> Spring plot of the area within the lake
 
 ````r
 #apply the mask to all the seasons
@@ -208,8 +225,8 @@ winter_lake <- mask(winter, water_mask)
 ````
 
 ### 3.3 Water surface classification
-#### NDVI 
-The NDVI can assume values between -1 and +1, generally positive values indicate the presence of vegetation, while negative values are usually associated to bare soil, water and snow. 
+#### 3.3.1 NDVI classification
+The NDVI can assume values between -1 and +1, generally positive values indicate the presence of vegetation, while negative values are associated to bare soil, water and snow. 
 ````r
 #calculate the NDVI (Normalized Difference Vegetation Index)
 ndvi_spring <- (spring_lake[["B8"]] - spring_lake[["B4"]]) / (spring_lake[["B8"]] + spring_lake[["B4"]])
@@ -228,7 +245,7 @@ dev.off()
   <img src="Images/NDVI.png">
 </p>
 
-> It can already be observed that most seasons, but especially autumn, have areas of the lake with NDVI values that are usually associated to vegetation.
+> It can already be observed that most seasons, but especially autumn, have areas of the lake with NDVI values that are usually associated to vegetation (>0).
 
 To classify the water surface using NDVI values, the following classes were created: 
 - **Water**: -Inf < NDVI < -0.2
@@ -237,7 +254,7 @@ To classify the water surface using NDVI values, the following classes were crea
 - **Dense Vegetation**: 0.2 < NDVI < Inf
 
 > [!NOTE]
-> The classes were decided referencing the work of Selvarajan (2026)
+> The classes were based on the work of Selvarajan (2026)
 
 ````r
 #classify the area using the NDVI
