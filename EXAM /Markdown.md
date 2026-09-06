@@ -170,7 +170,7 @@ plot(winter,col=viridis::turbo(100))
 > Winter plot
 
 > [!NOTE]
-> The plots show some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are only a few, over a large area of hundreds of square kilometers, they should't affect the results of the analysis.  
+> The plots show some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are only a few, over a large area of hundreds of square kilometrers, they should't affect the results of the analysis.  
 
 ### 3.1 RGB colours visualization
 ````r
@@ -227,8 +227,8 @@ autumn_lake <- mask(autumn, water_mask)
 winter_lake <- mask(winter, water_mask)
 ````
 
-### 3.3 Water surface classification
-#### 3.3.1 NDVI classification
+### 3.3 Water surface classification - NDVI
+
 The NDVI can assume values between -1 and +1, generally positive values indicate the presence of vegetation, while negative values are associated to bare soil, water and snow. 
 ````r
 #calculate the NDVI (Normalized Difference Vegetation Index)
@@ -248,7 +248,7 @@ dev.off()
   <img src="Images/NDVI.png">
 </p>
 
-> It can already be observed that most seasons, but especially autumn, have areas of the lake with NDVI values that are usually associated to vegetation (>0).
+> NDVI plot of the four seasons: It can be observed that most seasons, but especially autumn, have areas of the lake with NDVI values that are usually associated to vegetation (>0).
 
 To classify the water surface using NDVI values, the following classes were created: 
 - **Water**: -Inf < NDVI < -0.2
@@ -321,4 +321,158 @@ dev.off()
 <p align="center">
   <img src="Images/NDVI_classification.png">
 </p>
+
+#### 3.3.1 Results
+
+The classification based on the NDVI shows that in all of the seasons, except winter, the waters of the lake are almost never clear. 
+
+In spring sparse vegetation is distributed across the entire lake, saving the zones right beside the shores and the South-West corner, also towards the centre of the lake it becomes less prevalent. 
+In summer the main class is shallow turbid water, but some sparse vegetation can still be observed at the corners and near the shores. 
+In autumn, a vast portion of the lake is occupied by sparse vegetation, and along the East shore a large area that extends toward the centre is classified as dense vegetation, showing intense photosynthetic activity.
+In winter the majority of the lake’s surface is classified as water, with only some small portions being shallow turbid water.
+
+### 3.4 Water surface classification - NDCI
+
+Similarly to the NDVI, the NDCI can assume values between -1 and +1, with positive values indicating photosynthetic activity associated to the presence of chl-_a_.
+
+````r
+#calculate the NDCI (Normalized Difference Chlorophyll Index)
+ndci_spring <- (spring_lake[["B5"]] - spring_lake[["B4"]]) / (spring_lake[["B5"]] + spring_lake[["B4"]])
+ndci_summer <- (summer_lake[["B5"]] - summer_lake[["B4"]]) / (summer_lake[["B5"]] + summer_lake[["B4"]])
+ndci_autumn <- (autumn_lake[["B5"]] - autumn_lake[["B4"]]) / (autumn_lake[["B5"]] + autumn_lake[["B4"]])
+ndci_winter <- (winter_lake[["B5"]] - winter_lake[["B4"]]) / (winter_lake[["B5"]] + winter_lake[["B4"]])
+
+par(mfrow = c(2, 2))
+plot(ndci_spring, main="NDCI Spring", col=viridis::inferno(100))
+plot(ndci_summer, main="NDCI Summer", col=viridis::inferno(100))
+plot(ndci_autumn, main="NDCI Autumn", col=viridis::inferno(100))
+plot(ndci_winter, main="NDCI Winter", col=viridis::inferno(100))
+dev.off()
+````
+<p align="center">
+  <img src="Images/NDCI.png">
+</p>
+
+> NDCI plot of the four seasons: can be observed that during most seasons the lake's surface presents areas with NDCI values above 0, with autumn showing particularly noticeable portions with high values.
+
+To classify the water surface using NDCI values, the following classes were created: 
+ - **Oligotrophic/clean water** : - Inf < NDCI < -0.1
+ - **Low algae content**: -0.1 < NDCI < 0.0
+ - **Moderate eutrophic** : 0.0 < NDCI < 0.1
+ - **High eutrophic**: 0.1 < NDCI < 0.2
+ - **Very high algae biomass**: 0.2 < NDCI < 0.4
+ - **Algal bloom conditions**: 0.4 < NDCI < 0.5
+ - **Severe bloom/hypereutrophic**: 0.5 < NDCI < Inf
+
+> [!NOTE]
+> The classes were based on the work of Ahmad (2025)
+
+````r
+#classify the area using the NDCI
+class_matrix_ndci <- matrix(c(
+  -Inf,  -0.1,  1,   # Class 1: Oligotrophic/clean water 
+  -0.1,   0.0,  2,   # Class 2: Low algae content
+   0.0,  0.1,  3,    # Class 3: Moderate eutrophic 
+   0.1,  0.2,  4,    # Class 4: High eutrophic 
+   0.2,  0.4,  5,    # Class 5: Very high algae biomass
+   0.4,  0.5,  6,    # Class 6: Algal bloom conditions
+   0.5,  Inf,  7     # Class 7: Severe bloom/hypereutrophic
+), ncol = 3, byrow = TRUE)
+
+  
+par(mfcol = c(2, 3), oma = c(1, 1, 3, 0)) 
+#spring classification
+spring_ndci_classified <- classify(ndci_spring, class_matrix_ndci)
+plot(spring_ndci_classified, 
+     col = viridis::turbo(7), 
+     main = "Spring",
+     type = "classes")
+
+#summer classification
+summer_ndci_classified <- classify(ndci_summer, class_matrix_ndci)
+plot(summer_ndci_classified, 
+     col = viridis::turbo(7), 
+     main = "Summer",
+     type = "classes")
+
+#autumn classification
+autumn_ndci_classified <- classify(ndci_autumn, class_matrix_ndci)
+plot(autumn_ndci_classified, 
+     col = viridis::turbo(7), 
+     main = "Autumn",
+     type = "classes")
+
+#winter classification
+winter_ndci_classified <- classify(ndci_winter, class_matrix_ndci)
+plot(winter_ndci_classified, 
+     col = viridis::turbo(7), 
+     main = "Winter",
+     type = "classes")
+
+mtext("NDCI Classification: eutrophication level", 
+      side = 3,        # 3 = top margin
+      outer = TRUE,    # Place it in the outer margin space
+      line = 1,        # Distance from the top plot boundary
+      font = 2,        # Bold text
+      cex = 1.3)       # Title text size
+par(mfrow=c(1,1))
+legend("right", 
+       legend = c("Oligotrophic/clean water", 
+                  "Low algae content", 
+                  "Moderate eutrophic", 
+                  "High eutrophic", 
+                  "Very high algae biomass", 
+                  "Algal bloom conditions", 
+                  "Severe bloom/hypereutrophic"), 
+       fill = viridis::turbo(7),
+       xpd = NA,
+       inset = -0.3,
+       cex = 0.8)
+dev.off()
+````
+
+<p align="center">
+  <img src="Images/NDCI_classification.png">
+</p>
+
+#### 3.4.1 Results
+The classification based on the NDCI shows the level of eutrophication of the lake’s waters across the four seasons. 
+
+In spring the majority of the lake results to be moderate eutrophic, while in summer there are also some noticeable areas classified as high eutrophic and very high algae biomass.
+In accordance with the results obtained through the NDVI, in autumn an area with intense eutrophication along the East shore is identified.
+In winter the lake appears to have mainly low algae content and clean water, with only some spots of moderate eutrophic conditions concentrated in the South-West corner.
+
+### 3.4 Multitemporal comparison - NDVI
+In order to visualize how the lake waters chenged across seasons, firstly the percentages of each class were calculated, then the results were presented in a barplot. 
+##### Percentages
+````r
+#multitemporal comparison of the NDVI classes across seasons
+#calculate the frequencies of each class
+freq_ndvi_spring <- freq(spring_ndvi_classified)
+freq_ndvi_summer<- freq(summer_ndvi_classified)
+freq_ndvi_autumn <- freq(autumn_ndvi_classified)
+freq_ndvi_winter <- freq(winter_ndvi_classified)
+#calculate the percentages of each class
+perc_ndvi_spring = freq_ndvi_spring$count * 100 / sum(freq_ndvi_spring$count) #use sum to avoid counting masked pixels
+perc_ndvi_summer = freq_ndvi_summer$count * 100 / sum(freq_ndvi_summer$count) 
+perc_ndvi_autumn = freq_ndvi_autumn$count * 100 / sum(freq_ndvi_autumn$count) 
+perc_ndvi_winter = freq_ndvi_winter$count * 100 / sum(freq_ndvi_winter$count) 
+#create a table
+ndvi_category_labels <- c(
+  "Water", 
+  "Shallow Turbid Water", 
+  "Sparse Vegetation", 
+  "Dense Vegetation")
+ndvi_table <- data.frame(
+  Category = ndvi_category_labels ,
+  Spring = round(perc_ndvi_spring, 2), #round to two decimals
+  Summer = round(perc_ndvi_summer, 2),
+  Autumn = round(perc_ndvi_autumn, 2),
+  Winter = round(perc_ndvi_winter, 2))
+print(ndvi_table)
+````
+
+
+
+
 
