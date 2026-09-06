@@ -2,7 +2,7 @@
 ### 07/09/2026 exam - Spatial Ecology in R 
 #### Emy Filippi Quintussi
 
-## 1. Introduction 
+## 1. Introduction :clipboard:
 
 Lough Neagh is UK's largest freshwater lake, it is situated in Northern Ireland, spanning around 380 square kilometres. 
 In recent years it has been affected by severe algal blooms, raising concerns about the safety of the drinking water drawn from it, negatively impacting local activities and posing threats to biodiversity. 
@@ -15,10 +15,10 @@ Remote sensing can be a useful tool for monitoring algal blooms, allowing spatia
   <img src="Images/Lough_neagh.png">
 </p>
 
-###  Aim of the analysis
+###  Aim of the analysis 
 The aim of this analysis is to utilise remote sensing techniques to monitor the algal blooms of Lough Neagh during the year 2023, comparing their intensity across seasons.
 
-## 2. Methodology overview 
+## 2. Methodology overview :bookmark_tabs:
 ### 2.1 Time period
 In this analysis the four metereological seasons of the year 2023, starting from spring, were monitored:
 
@@ -27,7 +27,7 @@ In this analysis the four metereological seasons of the year 2023, starting from
  - autumn: 01/09 - 30/11/2023
  - winter: 01/12/2023 - 28/02/2024
 
-### 2.2 Satellite imagery
+### 2.2 Satellite imagery :artificial_satellite:
 The satellite images, one for each season, were downloaded from the Sentinel-2 dataset, using [Google Earth Engine](https://earthengine.google.com/). 
 The area of interest was selected manually on the map. 
 A cloud filter was applied to extract only images with less than 30% cloud coverage; if a season had more than one image meeting this criterion, the median of the images was computed. 
@@ -35,7 +35,7 @@ Despite the filter some of the images were still disturbed by clouds, so a cloud
 > [!NOTE]
 > the JavaScript code used on Google Earth Engine for each season can be found in the folder "JavaScript" 
 
-### 2.3 Indexes
+### 2.3 Indexes :chart_with_upwards_trend:
 The indexes used in this analysis are:
 
  - **NDWI** (Normalized Difference Water Index)
@@ -77,7 +77,7 @@ $$
 > - BLUE: B2
 > - NIR: B8
 
-## 3. R analysis
+## 3. R analysis :desktop_computer:
 > [!NOTE]
 > the R code used for this analysis can be found in the file "R_script.R"
 
@@ -172,7 +172,7 @@ plot(winter,col=viridis::turbo(100))
 > [!NOTE]
 > The plots show some missing pixels that have probably been caused by the cloud mask applied when retriving the images from Google Earth Engine. Since they are only a few, over a large area of hundreds of square kilometrers, they should't affect the results of the analysis.  
 
-### 3.1 RGB colours visualization
+### 3.1 RGB colours visualization :art:
 ````r
 #visualize the images in RGB colours
 par(mfrow = c(2, 2))
@@ -193,7 +193,7 @@ dev.off()
 In summer and autumn, green swirls that probably indicate intense algal blooms, are clearly visible on the lake's surface. In summer they are concentrated in the North-West portion of the lake; in autumn they occupy a larger area, they can be observed along the entire East shore, as well as in the previous area (albeit less conspicuous than in summer).
 In spring and winter no distinct evidences of algal blooms can be observed.
 
-### 3.2 Lake's area isolation
+### 3.2 Lake's area isolation :national_park:
 In order to isolate the area of the lake's surface from the surrounding land it was used the NDWI. It was selected a threshold value of -0.1 to distinguish water from the other types of land cover: 
 -	NDWI > -0.1: water
 -	NDWI < -0.1: non-water
@@ -227,7 +227,7 @@ autumn_lake <- mask(autumn, water_mask)
 winter_lake <- mask(winter, water_mask)
 ````
 
-### 3.3 Water surface classification - NDVI
+### 3.3 Water surface classification - NDVI :world_map:
 
 The NDVI can assume values between -1 and +1, generally positive values indicate the presence of vegetation, while negative values are associated to bare soil, water and snow. 
 ````r
@@ -331,7 +331,7 @@ In summer the main class is shallow turbid water, but some sparse vegetation can
 In autumn, a vast portion of the lake is occupied by sparse vegetation, and along the East shore a large area that extends toward the centre is classified as dense vegetation, showing intense photosynthetic activity.
 In winter the majority of the lake’s surface is classified as water, with only some small portions being shallow turbid water.
 
-### 3.4 Water surface classification - NDCI
+### 3.4 Water surface classification - NDCI :world_map:
 
 Similarly to the NDVI, the NDCI can assume values between -1 and +1, with positive values indicating photosynthetic activity associated to the presence of chl-_a_.
 
@@ -442,7 +442,7 @@ In spring the majority of the lake results to be moderate eutrophic, while in su
 In accordance with the results obtained through the NDVI, in autumn an area with intense eutrophication along the East shore is identified.
 In winter the lake appears to have mainly low algae content and clean water, with only some spots of moderate eutrophic conditions concentrated in the South-West corner.
 
-### 3.4 Multitemporal comparison - NDVI
+### 3.4 Multitemporal comparison - NDVI :bar_chart:
 In order to visualize how the lake waters chenged across seasons, firstly the percentages of each class were calculated, then the results were presented in a barplot. 
 ##### Percentages
 ````r
@@ -478,6 +478,7 @@ print(ndvi_table)
 | Sparse Vegetation     | 47.52      | 13.62      | 40.23      | 0.67       |
 | Dense Vegetation      | 0.15       | 0.67       | 18.69      | 0.06       |
 
+##### Barplot
 ````r
 #turn the wide table into a long table 
 ndvi_table_long <- ndvi_table %>% 
@@ -513,7 +514,8 @@ The barplot shows that the water class category is prevalent only in winter.
 In spring and summer, the most represented class is shallow turbid water, but while in summer it takes up the vast majority of the lake, in spring it occupies only 50.9% of the area, while the rest is mainly sparse vegetation.
 Autumn is the only season in which the vegetation classes occupy more area than the water classes, with sparse vegetation and dense vegetation covering 40.2% and 18.7% of the lake, respectively.
 
-### 3.5 Multitemporal comparison - NDCI
+### 3.5 Multitemporal comparison - NDCI :bar_chart:
+##### Percentages
 ````r
 #multitemporal comparison of the NDCI classes across seasons
 #calculate the frequencies of each class
@@ -552,6 +554,7 @@ print(ndci_table)
 | Algal bloom conditions      | 0.02       | 0.34       | 1.43       | 0.01       |
 | Severe bloom/hypereutrophic | 0.00       | 0.01       | 0.32       | 0.00       |
 
+##### Barplot
 ````r
 #turn the wide table into a long table 
 ndci_table_long <- ndci_table %>% 
@@ -600,6 +603,24 @@ The lake appears to be mostly moderate eutrophic in spring and summer.
 The “high eutrophic”, “very high algae biomass” and “algal bloom conditions” categories, tend to increase from spring to autumn, dropping again in winter. 
 Autumn is the season showing the most concerning state, with the majority of the waters being classified as high and very high eutrophic.
 
-## Conclusions
+## Conclusions :pushpin:
+Both indexes showed that Lough Neagh in 2023 experienced intense algal blooms during autumn, especially along the East shore, while winter is consistently, and expectedly, the season with the lowest levels of eutrophication.
+
+It was expected, due to climatic reasons, that summer would’ve had the highest algal blooms incidence, while as stated above, according to this analysis autumn was more affected. Looking at the NDVI results, summer appears to have been even less affected than spring; conversely, the NDCI results show that summer had higher levels of eutrophication compared to spring.
+
+These differences are probably due to the fact that the NDCI is better suited to identify the presence of chl-_a_ , so it was able to detect cyanobacteria photosynthetic activity more accurately. To verify this, further studies correlating in-situ samples, showing the actual eutrophication levels, with remote sensing indexes are needed. 
+
+## Bibliography :books:
+Ahmad, H. (2025). High‐resolution spatiotemporal monitoring of water quality and trophic status in bay st. Louis using sentinel‐2 ndci time series on google earth engine. Transactions in GIS, 29(8), e70166. https://doi.org/10.1111/tgis.70166
+
+Delowar, S., & Scrimshaw, M. (2025). A satellite-based approach to investigating eutrophication in lakes receiving wastewater treatment effluent: A case study of lake windermere. https://doi.org/10.32942/X2K94H
+
+Dwyer, O. (2023, ottobre 19). Lough Neagh: How climate change intensified toxic algae on the UK’s largest lake. Carbon Brief. https://www.carbonbrief.org/lough-neagh-how-climate-change-intensified-toxic-algae-on-the-uks-largest-lake
+
+Earth Science Data Systems, N. (2024, settembre 30). Normalized difference vegetation index (Ndvi) | nasa earthdata [Topic Page]. Earth Science Data Systems, NASA. Earth Data. https://www.earthdata.nasa.gov/topics/land-surface/normalized-difference-vegetation-index-ndvi
+
+Mishra, S., & Mishra, D. R. (2012). Normalized difference chlorophyll index: A novel model for remote estimation of chlorophyll-a concentration in turbid productive waters. Remote Sensing of Environment, 117, 394–406. https://doi.org/10.1016/j.rse.2011.10.016
+
+Selvarajan, S. (2026). Remote sensing detection of mixed algal blooms in a shallow eutrophic lake using landsat-9 oli. The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences, XLVIII-M-10–2025, 213–220. https://doi.org/10.5194/isprs-archives-XLVIII-M-10-2025-213-2026
 
 
