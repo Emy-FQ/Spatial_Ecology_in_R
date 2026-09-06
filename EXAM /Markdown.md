@@ -155,8 +155,8 @@ plot(autumn,col=viridis::turbo(100))
 #import the winter rast image and align it
 winter<-rast("Winter.tif")
 #the "project" function alone failed, alternative: align the image in two steps
-winter_lonlat <- project(winter, "EPSG:4326") #step 1: change coordinates systems
-winter_aligned <- resample(winter_lonlat, spring) #align the pixels grids
+winter_lonlat <- project(winter, "EPSG:4326")     #step 1: change coordinates systems
+winter_aligned <- resample(winter_lonlat, spring) #step 2 : align the pixels grids
 winter<-winter_aligned
 compareGeom(spring, winter) #it returns "TRUE"
 
@@ -202,11 +202,14 @@ Then a mask was created to maintain only the water pixels, converting non-water 
 
 ````r
 #Isolate the lake from the land using the NDWI (Normalized Difference Water Index)
+
 #calculate the NDWI 
 ndwi_spring <- (spring[["B3"]] - spring[["B8"]]) / (spring[["B3"]]  + spring[["B8"]])
+
 #create a water mask: TRUE (1) for water, FALSE (0) for non-water
-water_mask <- ndwi_spring > -0.1 #ndwi values above -0.1 identify water
+water_mask <- ndwi_spring > -0.1  #ndwi values above -0.1 identify water
 water_mask[water_mask == 0] <- NA #convert non-water pixel to NA
+
 #apply the water mask and check results
 spring_lake <- mask(spring, water_mask)
 plot(spring_lake)
